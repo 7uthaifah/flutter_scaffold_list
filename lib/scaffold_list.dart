@@ -150,20 +150,22 @@ class ScaffoldListState<T> extends State<ScaffoldList<T>> {
     bool hasError = false,
     List<T> list,
   }) {
-    if (widget.filter != null) {
-      list = list.where(widget.filter).toList();
-    }
-    if (widget.sort != null) {
-      list = list..sort(widget.sort);
-    }
+    if (hasError) {
+      return _buildError();
+    } else if (isLoading) {
+      return _buildLoading();
+    } else if (list.isEmpty) {
+      return _buildEmpty();
+    } else {
+      if (widget.filter != null) {
+        list = list.where(widget.filter).toList();
+      }
+      if (widget.sort != null) {
+        list = list..sort(widget.sort);
+      }
 
-    _list = list;
-
-    return hasError
-        ? _buildError()
-        : isLoading
-            ? _buildLoading()
-            : list.isEmpty ? _buildEmpty() : _buildList();
+      return _buildList(list);
+    }
   }
 
   Widget _buildError() => widget.style.error;
@@ -173,8 +175,8 @@ class ScaffoldListState<T> extends State<ScaffoldList<T>> {
   Widget _buildEmpty() =>
       widget.searchFilter == null ? widget.style.noResults : widget.style.empty;
 
-  Widget _buildList() => ScaffoldListView<T>(
-        list: _list,
+  Widget _buildList(List<T> list) => ScaffoldListView<T>(
+        list: _list = list,
         scrollDirection: widget.scrollDirection,
         reverse: widget.reverse,
         controller: widget.controller,
