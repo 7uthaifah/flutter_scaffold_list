@@ -219,10 +219,7 @@ class ScaffoldListSearchDelegate<T> extends SearchDelegate<T> {
         filter: (T item) => searchFilter != null
             ? searchFilter(item, query)
             : item.toString().startsWith(query.toString()),
-        itemBuilder: (BuildContext context, item) => InkWell(
-          child: itemBuilder(context, item),
-          onTap: () => close(context, item),
-        ),
+        itemBuilder: itemBuilder,
       );
 
   @override

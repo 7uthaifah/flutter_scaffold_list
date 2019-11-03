@@ -13,3 +13,7 @@
 ## 0.0.4
 
 * Fixed empty list message.
+
+## 0.0.5
+
+* Remove InkWell in search itemBuilder.
