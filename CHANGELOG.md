@@ -9,3 +9,7 @@
 ## 0.0.3
 
 * Some improvements.
+
+## 0.0.4
+
+* Fixed empty list message.

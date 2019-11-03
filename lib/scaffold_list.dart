@@ -154,8 +154,6 @@ class ScaffoldListState<T> extends State<ScaffoldList<T>> {
       return _buildError();
     } else if (isLoading) {
       return _buildLoading();
-    } else if (list.isEmpty) {
-      return _buildEmpty();
     } else {
       if (widget.filter != null) {
         list = list.where(widget.filter).toList();
@@ -163,8 +161,7 @@ class ScaffoldListState<T> extends State<ScaffoldList<T>> {
       if (widget.sort != null) {
         list = list..sort(widget.sort);
       }
-
-      return _buildList(list);
+      return list.isEmpty ? _buildEmpty() : _buildList(list);
     }
   }
 
