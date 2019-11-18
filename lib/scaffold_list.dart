@@ -81,6 +81,8 @@ class ScaffoldList<T> extends StatefulWidget {
     this.sort,
     this.searchFilter,
     this.searchDelegate,
+    this.searchHintText,
+    this.searchTheme,
     this.style = const ScaffoldListStyle(),
   })  : assert(list != null),
         assert(searchDelegate != null ? searchFilter != null : true),
@@ -107,6 +109,8 @@ class ScaffoldList<T> extends StatefulWidget {
 
   final bool Function(T, String) searchFilter;
   final SearchDelegate searchDelegate;
+  final String searchHintText;
+  final ThemeData searchTheme;
 
   final ScaffoldListStyle style;
 
@@ -117,14 +121,18 @@ class ScaffoldList<T> extends StatefulWidget {
 class ScaffoldListState<T> extends State<ScaffoldList<T>> {
   List<T> _list;
 
+  List<T> get list => _list;
+
   Future<T> showSearch() async => await Default.showSearch<T>(
         context: context,
         delegate: widget.searchDelegate ??
             ScaffoldListSearchDelegate<T>(
               list: _list ?? [],
               itemBuilder: widget.itemBuilder,
-              searchFilter: widget.searchFilter,
+              filter: widget.searchFilter,
               style: widget.style,
+              hintText: widget.searchHintText,
+              theme: widget.searchTheme,
             ),
       );
 
@@ -194,14 +202,23 @@ class ScaffoldListSearchDelegate<T> extends SearchDelegate<T> {
   ScaffoldListSearchDelegate({
     this.list,
     this.itemBuilder,
-    this.searchFilter,
+    this.filter,
     this.style,
-  });
+    this.hintText,
+    this.theme,
+  }) : super(searchFieldLabel: hintText);
+
+  @override
+  ThemeData appBarTheme(BuildContext context) =>
+      this.theme ?? super.appBarTheme(context);
 
   final List<T> list;
   final Function(BuildContext, T) itemBuilder;
-  final bool Function(T item, String query) searchFilter;
+  final bool Function(T item, String query) filter;
   final ScaffoldListStyle style;
+
+  final String hintText;
+  final ThemeData theme;
 
   @override
   Widget buildLeading(BuildContext context) => IconButton(
@@ -216,8 +233,8 @@ class ScaffoldListSearchDelegate<T> extends SearchDelegate<T> {
   @override
   Widget buildSuggestions(BuildContext context) => ScaffoldList<T>(
         list: list,
-        filter: (T item) => searchFilter != null
-            ? searchFilter(item, query)
+        filter: (T item) => filter != null
+            ? filter(item, query)
             : item.toString().startsWith(query.toString()),
         itemBuilder: itemBuilder,
       );

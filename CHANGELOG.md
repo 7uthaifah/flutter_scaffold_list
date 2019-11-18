@@ -17,3 +17,7 @@
 ## 0.0.5
 
 * Remove InkWell in search itemBuilder.
+
+## 0.0.6
+
+* Added searchHintText & searchTheme params.
