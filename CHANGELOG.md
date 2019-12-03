@@ -21,3 +21,7 @@
 ## 0.0.6
 
 * Added searchHintText & searchTheme params.
+
+## 0.0.7
+
+* Now list default value is empty rather than null

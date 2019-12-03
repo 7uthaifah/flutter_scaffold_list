@@ -119,7 +119,7 @@ class ScaffoldList<T> extends StatefulWidget {
 }
 
 class ScaffoldListState<T> extends State<ScaffoldList<T>> {
-  List<T> _list;
+  List<T> _list = [];
 
   List<T> get list => _list;
 
@@ -127,7 +127,7 @@ class ScaffoldListState<T> extends State<ScaffoldList<T>> {
         context: context,
         delegate: widget.searchDelegate ??
             ScaffoldListSearchDelegate<T>(
-              list: _list ?? [],
+              list: _list,
               itemBuilder: widget.itemBuilder,
               filter: widget.searchFilter,
               style: widget.style,
