@@ -104,10 +104,7 @@ class _ScaffoldListDemoPageState extends State<ScaffoldListDemoPage> {
         // List can be Future<List<Post>> or List<Post>
         list: posts,
         // Build your item widget
-        itemBuilder: (BuildContext context, Post post) => ListTile(
-          title: Text(post.title),
-          subtitle: Text(post.body),
-        ),
+        itemBuilder: _buildItem,
         // Useaful when using Future<List>
         filter: (Post post) => post.title.toLowerCase().startsWith("s"),
         // Also useaful when using Future<List>
@@ -117,6 +114,13 @@ class _ScaffoldListDemoPageState extends State<ScaffoldListDemoPage> {
         searchFilter: (Post post, String query) =>
             post.title.toLowerCase().contains(query.toLowerCase()),
       ),
+    );
+  }
+
+  Widget _buildItem(BuildContext context, Post post, int index) {
+    return ListTile(
+      title: Text(post.title),
+      subtitle: Text(post.body),
     );
   }
 }

@@ -25,3 +25,7 @@
 ## 0.0.7
 
 * Now list default value is empty rather than null
+
+## 0.0.8
+
+* Added index on @itemBuilder as optinal parameter

@@ -15,7 +15,7 @@ class ScaffoldListView<T> extends ListView {
     ScrollPhysics physics,
     bool shrinkWrap = false,
     EdgeInsetsGeometry padding,
-    Widget Function(BuildContext, T) itemBuilder,
+    Widget Function(BuildContext, T, [int index]) itemBuilder,
     IndexedWidgetBuilder separatorBuilder,
     bool addAutomaticKeepAlives = true,
     bool addRepaintBoundaries = true,
@@ -36,6 +36,7 @@ class ScaffoldListView<T> extends ListView {
           itemBuilder: (BuildContext context, int index) => itemBuilder(
             context,
             list[index],
+            index,
           ),
           separatorBuilder: (BuildContext context, int index) =>
               separatorBuilder != null
@@ -104,7 +105,7 @@ class ScaffoldList<T> extends StatefulWidget {
 
   final bool Function(T) filter;
   final int Function(T, T) sort;
-  final Widget Function(BuildContext, T) itemBuilder;
+  final Widget Function(BuildContext, T, [int index]) itemBuilder;
   final IndexedWidgetBuilder separatorBuilder;
 
   final bool Function(T, String) searchFilter;

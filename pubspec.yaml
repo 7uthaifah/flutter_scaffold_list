@@ -1,8 +1,8 @@
 name: scaffold_list
 description: A new Flutter package that provides a scaffold for list.
-version: 0.0.7
+version: 0.0.8
 author: Huthaifah Mustafa<7uthaifah.mustafa@gmail.com>
-homepage: https://github.com/7uthaifah/flutter_scaffold_list
+homepage: https://github.com/hsul4n/flutter_scaffold_list
 
 environment:
   sdk: ">=2.1.0 <3.0.0"
