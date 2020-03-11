@@ -28,4 +28,8 @@
 
 ## 0.0.8
 
-* Added index on @itemBuilder as optinal parameter
+* Fixing some issues
+
+## 0.0.9
+
+* Fixing some issues
