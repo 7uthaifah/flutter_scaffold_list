@@ -33,3 +33,7 @@
 ## 0.0.9
 
 * Fixing some issues
+
+## 0.1.0
+
+* list property now supports streams

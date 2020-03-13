@@ -5,6 +5,12 @@ import 'dart:async';
 import 'package:flutter/material.dart' hide showSearch;
 import 'package:flutter/material.dart' as Default show showSearch;
 
+typedef SearchedFilter<T> = bool Function(T, String);
+typedef FilterdList<T> = bool Function(T);
+typedef SortedList<T> = int Function(T, T);
+typedef TypedWidgetBuilder<T> = Widget Function(BuildContext, T);
+typedef TypedIndexWidgetBuilder<T> = Widget Function(BuildContext, T, int);
+
 class ScaffoldListView<T> extends ListView {
   ScaffoldListView({
     Key key,
@@ -15,7 +21,8 @@ class ScaffoldListView<T> extends ListView {
     ScrollPhysics physics,
     bool shrinkWrap = false,
     EdgeInsetsGeometry padding,
-    Widget Function(BuildContext, T) itemBuilder,
+    TypedWidgetBuilder<T> itemBuilder,
+    TypedIndexWidgetBuilder<T> itemBuilderWithIndex,
     IndexedWidgetBuilder separatorBuilder,
     bool addAutomaticKeepAlives = true,
     bool addRepaintBoundaries = true,
@@ -23,7 +30,6 @@ class ScaffoldListView<T> extends ListView {
     double cacheExtent,
     List<T> list,
   })  : assert(list != null),
-        assert(itemBuilder != null),
         super.separated(
           key: key,
           scrollDirection: scrollDirection,
@@ -33,10 +39,13 @@ class ScaffoldListView<T> extends ListView {
           physics: physics,
           shrinkWrap: shrinkWrap,
           padding: padding,
-          itemBuilder: (BuildContext context, int index) => itemBuilder(
-            context,
-            list[index],
-          ),
+          itemBuilder: (BuildContext context, int index) {
+            if (itemBuilder != null) {
+              return itemBuilder(context, list[index]);
+            } else {
+              return itemBuilderWithIndex(context, list[index], index);
+            }
+          },
           separatorBuilder: (BuildContext context, int index) =>
               separatorBuilder != null
                   ? separatorBuilder(context, index)
@@ -63,7 +72,7 @@ class ScaffoldListStyle {
 class ScaffoldList<T> extends StatefulWidget {
   ScaffoldList({
     Key key,
-    @required this.list,
+    this.list,
     this.scrollDirection = Axis.vertical,
     this.reverse = false,
     this.controller,
@@ -71,7 +80,8 @@ class ScaffoldList<T> extends StatefulWidget {
     this.physics,
     this.shrinkWrap = false,
     this.padding,
-    @required this.itemBuilder,
+    this.itemBuilder,
+    this.itemBuilderWithIndex,
     this.separatorBuilder,
     this.addAutomaticKeepAlives = true,
     this.addRepaintBoundaries = true,
@@ -84,8 +94,8 @@ class ScaffoldList<T> extends StatefulWidget {
     this.searchHintText,
     this.searchTheme,
     this.style = const ScaffoldListStyle(),
-  })  : assert(list != null),
-        assert(searchDelegate != null ? searchFilter != null : true),
+  })  : assert(searchDelegate != null ? searchFilter != null : true),
+        assert(itemBuilder != null || itemBuilderWithIndex != null),
         super(key: key);
 
   final dynamic list;
@@ -102,12 +112,12 @@ class ScaffoldList<T> extends StatefulWidget {
   final bool addSemanticIndexes;
   final double cacheExtent;
 
-  final bool Function(T) filter;
-  final int Function(T, T) sort;
-  final Widget Function(BuildContext, T) itemBuilder;
+  final FilterdList<T> filter;
+  final SortedList<T> sort;
+  final TypedWidgetBuilder<T> itemBuilder;
+  final TypedIndexWidgetBuilder<T> itemBuilderWithIndex;
   final IndexedWidgetBuilder separatorBuilder;
-
-  final bool Function(T, String) searchFilter;
+  final SearchedFilter<T> searchFilter;
   final SearchDelegate searchDelegate;
   final String searchHintText;
   final ThemeData searchTheme;
@@ -128,7 +138,13 @@ class ScaffoldListState<T> extends State<ScaffoldList<T>> {
         delegate: widget.searchDelegate ??
             ScaffoldListSearchDelegate<T>(
               list: _list,
-              itemBuilder: widget.itemBuilder,
+              itemBuilder: (BuildContext context, T type) {
+                if (widget.itemBuilder != null) {
+                  return widget.itemBuilder(context, type);
+                } else {
+                  return widget.itemBuilderWithIndex(context, type, null);
+                }
+              },
               filter: widget.searchFilter,
               style: widget.style,
               hintText: widget.searchHintText,
@@ -137,21 +153,37 @@ class ScaffoldListState<T> extends State<ScaffoldList<T>> {
       );
 
   @override
-  Widget build(BuildContext context) => widget.list is Future<List<T>>
-      ? FutureBuilder<List<T>>(
-          future: widget.list,
-          builder: (BuildContext context, AsyncSnapshot<List<T>> snapshot) =>
-              _build(
-            isLoading: snapshot.connectionState == ConnectionState.waiting,
-            hasError: snapshot.hasError,
-            list: snapshot.data,
-          ),
-        )
-      : (widget.list is List<T>
-          ? _build(isLoading: widget.list == null, list: widget.list)
-          : ErrorWidget(
-              'type ${widget.list.runtimeType} is not subtype of List<$T> or Future<List<$T>>',
-            ));
+  Widget build(BuildContext context) {
+    if (widget.list is Stream<List<T>>) {
+      return StreamBuilder<List<T>>(
+        stream: widget.list,
+        builder: (BuildContext context, AsyncSnapshot<List<T>> snapshot) =>
+            _build(
+          isLoading: snapshot.connectionState == ConnectionState.waiting,
+          hasError: snapshot.hasError,
+          list: snapshot.data,
+        ),
+      );
+    } else if (widget.list is Future<List<T>>) {
+      return FutureBuilder<List<T>>(
+        future: widget.list,
+        builder: (BuildContext context, AsyncSnapshot<List<T>> snapshot) =>
+            _build(
+          isLoading: snapshot.connectionState == ConnectionState.waiting,
+          hasError: snapshot.hasError,
+          list: snapshot.data,
+        ),
+      );
+    } else if (widget.list is List<T>) {
+      return _build(isLoading: false, list: widget.list);
+    } else if (widget.list == null) {
+      return _build(isLoading: true);
+    } else {
+      return ErrorWidget(
+        'type ${widget.list.runtimeType} is not subtype of Stream<List<T>>, Future<List<$T>> or List<$T>',
+      );
+    }
+  }
 
   Widget _build({
     bool isLoading,
@@ -190,6 +222,7 @@ class ScaffoldListState<T> extends State<ScaffoldList<T>> {
         shrinkWrap: widget.shrinkWrap,
         padding: widget.padding,
         itemBuilder: widget.itemBuilder,
+        itemBuilderWithIndex: widget.itemBuilderWithIndex,
         separatorBuilder: widget.separatorBuilder,
         addAutomaticKeepAlives: widget.addAutomaticKeepAlives,
         addRepaintBoundaries: widget.addRepaintBoundaries,
@@ -213,8 +246,8 @@ class ScaffoldListSearchDelegate<T> extends SearchDelegate<T> {
       this.theme ?? super.appBarTheme(context);
 
   final List<T> list;
-  final Function(BuildContext, T) itemBuilder;
-  final bool Function(T item, String query) filter;
+  final TypedWidgetBuilder<T> itemBuilder;
+  final SearchedFilter<T> filter;
   final ScaffoldListStyle style;
 
   final String hintText;

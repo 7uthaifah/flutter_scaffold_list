@@ -51,15 +51,15 @@ class _ScaffoldListDemoPageState extends State<ScaffoldListDemoPage> {
   final _scaffoldKey = GlobalKey<ScaffoldState>();
   final _scaffoldListKey = GlobalKey<ScaffoldListState>();
 
-  Future<List<Post>> posts;
+  Future<List<Post>> _posts;
 
   @override
   void initState() {
     super.initState();
-    posts = fetchPost();
+    _posts = _fetchPosts();
   }
 
-  Future<List<Post>> fetchPost() async {
+  Future<List<Post>> _fetchPosts() async {
     final response =
         await http.get('https://jsonplaceholder.typicode.com/posts');
 
@@ -101,16 +101,16 @@ class _ScaffoldListDemoPageState extends State<ScaffoldListDemoPage> {
       body: ScaffoldList<Post>(
         // Use key to show search delegate
         key: _scaffoldListKey,
-        // List can be Future<List<Post>> or List<Post>
-        list: posts,
+        // List can be Stream<List<Post>>, Future<List<Post>> or List<Post>
+        list: _posts,
         // Build your item widget
         itemBuilder: (BuildContext context, Post post) => ListTile(
           title: Text(post.title),
           subtitle: Text(post.body),
         ),
-        // Useaful when using Future<List>
+        // Useaful when using Stream<List<T>> or Future<List<T>>
         filter: (Post post) => post.title.toLowerCase().startsWith("s"),
-        // Also useaful when using Future<List>
+        // Also useaful when using Stream<List<T>> or Future<List<T>>
         sort: (Post postA, Post postB) =>
             postA.title.length.compareTo(postB.title.length),
         // Filter search results use key to show search delegate as shown above
